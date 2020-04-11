@@ -1,165 +1,159 @@
-d3.json("./samples.json").then(function(data) {
+// Build the horizontal bar chart.
+function buildBarChart(sampleData) {
+    // Pull the top ten values from the data array and push them into a variable.
+    var topTenOtuIds = sampleData.otu_ids.slice(0, 10).map(d => "OTU " + d).reverse();
+    var topTenSampleValues = sampleData.sample_values.slice(0, 10).reverse();
+    var topTenSampleLabels = sampleData.otu_labels.slice(0, 10).reverse();
 
-    var samplesData = data.samples;
-    var samplesMetadata = data.metadata;
-    // console.log(samplesData);
-    console.log(samplesMetadata);
-    
-    
-    samplesData.sort(function(a, b) {
-        return ((a.sample_values > b.sample_values) ? -1 : ((a.sample_values == b.sample_values) ? 0 : 1));
-    });
+    // Set the trace.
+    var horizontalbar = [{
+        type: 'bar',
+        text: topTenSampleLabels,
+        x: topTenSampleValues,
+        y: topTenOtuIds,
+        orientation: 'h'
+    }];
 
-
-
-    var topTenIds = [];
-    var topTenOtuIds = [];
-    var topTenSampleValues = [];
-
-    samplesData.forEach((element, index) => {
-        topTenIds.push(element.id);
-        topTenOtuIds.push(element.otu_ids.slice(0, 10).map(d => "OTU " + d));
-        topTenSampleValues.push(element.sample_values.slice(0, 10));
-    });
-
-    var metaIDs = [];
-    // var metaIDs = [];
-    // var metaIDs = [];
-
-    samplesMetadata.forEach((element, index) => {
-        metaIDs.push(element.id);
-        // topTenOtuIds.push(element.otu_ids.slice(0, 10).map(d => "OTU " + d));
-        // topTenSampleValues.push(element.sample_values.slice(0, 10));
-    });
-
-    console.log(metaIDs);
-
-
-    function buildCharts(dataChange) {
-        d3.json("./samples.json").then(function(data) {
-            var samplesData = data.samples;
-            
-            var topTenIds = [];
-            var topTenOtuIds = [];
-            var topTenSampleValues = [];
-            var topTenSampleLabels = [];
-
-            samplesData.forEach((element, index) => {
-                topTenIds.push(element.id);
-                topTenOtuIds.push(element.otu_ids.slice(0, 10).reverse().map(d => "OTU " + d));
-                topTenSampleValues.push(element.sample_values.slice(0, 10).reverse());
-                topTenSampleLabels.push(element.sample_labels.slice(0, 10).reverse());
-            });
-            
-            // var initialViewOtuID = samplesData[115].otu_ids.slice(0, 10).reverse();
-            // var initialViewValue = samplesData[115].sample_values.slice(0, 10).reverse();
-            // var initialViewLabels = samplesData[115].otu_labels.slice(0, 10).reverse();
-
-            var newIDelements = [];
-            topTenIds.forEach((element, index) => {
-                newIDelements.push("OTU " + element.toString());
-            });
-
-            // console.log(newIDelements);
-
-            var horizontalbar = [{
-                type: 'bar',
-                text: topTenSampleLabels,
-                x: topTenSampleValues,
-                y: newIDelements,
-                orientation: 'h'
-            }];
-
-            var barLayout = {
-                title: "Top 10 OTUs",
-                autosize: true,
-                width: 600,
-                height: 800,
-                margin: {
-                    l: 100,
-                    r: 100,
-                    b: 100,
-                    t: 100,
-                    pad: 1
-                },
-            };
-
-            Plotly.newPlot("bar",horizontalbar, barLayout);
-
-            var sampleOTUids = samplesData.map(sData => sData.otu_ids);
-            var sampleValues = samplesData.map(sData => sData.sample_values);
-
-            var trace1 = {
-                x: sampleOTUids,
-                y: sampleValues,
-                mode: 'markers',
-                marker: {
-                    size: sampleValues,
-                    color: sampleOTUids
-                }
-            };
-
-            var bubblechart = [trace1]
-
-            var bubbleLayout = {
-                autosize: true,
-                xaxis:{title: "OTU ID"},
-                height: 600,
-                width: 1200,
-                margin: {
-                    l: 100,
-                    r: 100,
-                    b: 100,
-                    t: 100,
-                    pad: 1
-                },
-            };
-
-            Plotly.newPlot("bubble",bubblechart, bubbleLayout);
-        });
-    }
-
-    function buildMeta(dataChange) {
-
-        var sample_metadata = d3.select("#sample-metadata");
-
-        sample_metadata.html("");
-
-        Object.entries(dataChange).forEach(function ([key, value]) {
-            var row = sample_metadata.append("p");
-            row.text(`${key}: ${value} \n`);
-        });
-
-    }
-
-    function init() {
-
-        var selection = d3.select("#selDataset");
-
-        var sampleIDs = samplesData.map(sData => sData.id);
-
-
-        metaIDs.forEach((dataChange) => {
-            selection
-            .append("option")
-            .text(dataChange)
-            .property("value", dataChange);
-        });
-
-        var initialID = sampleIDs;
-        buildCharts(initialID);
-        buildMeta(initialID);
-
+    // Set the layout.
+    var barLayout = {
+        title: "Top 10 OTUs",
+        autosize: true,
+        width: 600,
+        height: 800,
+        margin: {
+            l: 100,
+            r: 100,
+            b: 100,
+            t: 100,
+            pad: 1
+        },
     };
-    init()
 
-    // function optionChanged(newData) {
-    //     buildCharts(newData);
-    //     buildMeta(newData);
-    // };
+    // Plot bar chart.
+    Plotly.newPlot("bar",horizontalbar, barLayout);
+}
 
+// Build the bubble chart.
+function buildBubbleChart(sampleData) {
+    // Pull the necessary data points from the array and push them into a variable.
+    var sampleOTUids = sampleData.otu_ids;
+    var sampleValues = sampleData.sample_values;
 
+    // Set the trace.
+    var trace1 = {
+        x: sampleOTUids,
+        y: sampleValues,
+        mode: 'markers',
+        marker: {
+            size: sampleValues,
+            color: sampleOTUids
+        }
+    };
 
+    // Push trace into a variable.
+    var bubblechart = [trace1]
 
+    // Set the layout.
+    var bubbleLayout = {
+        autosize: true,
+        xaxis:{title: "OTU ID"},
+        height: 600,
+        width: 1000,
+        margin: {
+            l: 100,
+            r: 100,
+            b: 100,
+            t: 100,
+            pad: 1
+        },
+    };
 
-});
+    // Plot bubble chart.
+    Plotly.newPlot("bubble",bubblechart, bubbleLayout);
+
+}
+
+// Build the demographics card.
+function buildDemographicsCard(sampleMetadata) {
+    // D3 select the html ID where the card will be placed.
+    var demoPanel = d3.select("#sample-metadata");
+    demoPanel.html("");
+    // Push the key value pairs into a new variable
+    var demoInfo = {
+        ID: sampleMetadata.id,
+        Ethnicity: sampleMetadata.ethnicity,
+        Gender: sampleMetadata.gender,
+        Age: sampleMetadata.age,
+        Location: sampleMetadata.location,
+        BBtype: sampleMetadata.bbtype,
+        Wfreq: sampleMetadata.wfreq,
+    };
+    // Call each key value pair and append them to the #sample-metadata element.
+    Object.entries(demoInfo).forEach(([key, value]) => {
+        demoPanel.append('h6').text(`${key}: ${value}`);
+    });
+
+}
+
+// Create dropdown values from the existing IDs in the samples array.
+function createdropDown(samples) {
+    // D3 select the html ID where the data will be placed.
+    var dropdownMenu = d3.select("#selDataset");
+    // Iterate trhough the ID list and append each ID to the dropdownMenu.
+    samples.forEach((x) => {
+        dropdownMenu
+        .append("option")
+        .text(x)
+        .property("value", x);
+    });
+     
+}
+
+// Update the plotly charts and demographics card based on drop down selection.
+function updatePlotly(sampleID) {
+    // D3 select the html ID where the data will be placed.
+    var dropdownMenu = d3.select("#selDataset")
+    // Pull the selection from the value elemnet and pass it into a variable.
+    var dataSet = dropdownMenu.property("value");
+    // Call data.
+    d3.json("./samples.json").then(function(data) {
+        var samplesData = data.samples;
+        var samplesMetadata = data.metadata;
+
+        sampleIDs = [];
+        // Append each ID from the samplesData array to the samplesIDs list.
+        samplesData.forEach((element, index) => {
+            sampleIDs.push(element.id);
+        })
+
+        // Get the index of the ID selection.
+        var selDataIndex = sampleIDs.indexOf(dataSet)
+
+        // Update each chart function using the index of the ID selection.
+        buildBarChart(samplesData[selDataIndex]);        
+        buildBubbleChart(samplesData[selDataIndex]);
+        buildDemographicsCard(samplesMetadata[selDataIndex]);
+
+    });
+
+}
+
+// Update the plotly charts each time an option is changed.
+function optionChanged(sampleID) {
+    updatePlotly(sampleID);
+}
+
+// Set the initial parameters for the dashboard.
+function init() {
+    d3.json("./samples.json").then(function(data) {
+        var samplesData = data.samples;
+        var samplesMetadata = data.metadata;
+            console.log(samplesMetadata);
+        
+        buildBarChart(samplesData[0]);        
+        buildBubbleChart(samplesData[0]);
+        buildDemographicsCard(samplesMetadata[0]);
+        createdropDown(samplesData.map(x => x.id));
+    });
+}
+init();
